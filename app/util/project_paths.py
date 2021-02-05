@@ -7,6 +7,10 @@ def __get_jira_yml():
     return Path(__file__).parents[1] / "jira.yml"
 
 
+def __get_jsm_yml():
+    return Path(__file__).parents[1] / "jsm.yml"
+
+
 def __get_datasets():
     return Path(__file__).parents[1] / "datasets"
 
@@ -15,8 +19,16 @@ def __get_jira_datasets():
     return __get_datasets() / "jira"
 
 
+def __get_jsm_datasets():
+    return __get_datasets() / "jsm"
+
+
 def __get_jira_dataset(file_name):
     return __get_jira_datasets() / file_name
+
+
+def __get_jsm_dataset(file_name):
+    return __get_jsm_datasets() / file_name
 
 
 def __get_confluence_yml():
@@ -61,6 +73,18 @@ JIRA_DATASET_KANBAN_BOARDS = __get_jira_dataset('kanban-boards.csv')
 JIRA_DATASET_USERS = __get_jira_dataset('users.csv')
 JIRA_DATASET_ISSUES = __get_jira_dataset('issues.csv')
 JIRA_DATASET_PROJECTS = __get_jira_dataset('projects.csv')
+JIRA_DATASET_CUSTOM_ISSUES = __get_jira_dataset('custom-issues.csv')
+
+JSM_YML = __get_jsm_yml()
+JSM_DATASETS = __get_jsm_datasets()
+JSM_DATASET_AGENTS = __get_jsm_dataset('agents.csv')
+JSM_DATASET_CUSTOMERS = __get_jsm_dataset('customers.csv')
+JSM_DATASET_REQUESTS = __get_jsm_dataset('requests.csv')
+JSM_DATASET_SERVICE_DESKS_L = __get_jsm_dataset('service_desks_large.csv')
+JSM_DATASET_SERVICE_DESKS_M = __get_jsm_dataset('service_desks_medium.csv')
+JSM_DATASET_SERVICE_DESKS_S = __get_jsm_dataset('service_desks_small.csv')
+JSM_DATASET_REQUEST_TYPES = __get_jsm_dataset('request_types.csv')
+JSM_DATASET_CUSTOM_ISSUES = __get_jsm_dataset('custom-issues.csv')
 
 CONFLUENCE_YML = __get_confluence_yml()
 CONFLUENCE_DATASETS = __get_confluence_datasets()
@@ -68,6 +92,7 @@ CONFLUENCE_USERS = __get_confluence_dataset('users.csv')
 CONFLUENCE_PAGES = __get_confluence_dataset('pages.csv')
 CONFLUENCE_BLOGS = __get_confluence_dataset('blogs.csv')
 CONFLUENCE_STATIC_CONTENT = __get_confluence_dataset('static-content/files_upload.csv')
+CONFLUENCE_CUSTOM_PAGES = __get_confluence_dataset('custom_pages.csv')
 
 BITBUCKET_YML = __get_bitbucket_yml()
 BITBUCKET_DATASETS = __get_bitbucket_datasets()

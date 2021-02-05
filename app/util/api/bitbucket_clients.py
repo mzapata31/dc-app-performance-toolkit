@@ -1,7 +1,7 @@
 import time
 from enum import Enum
 
-from util.api.abstract_clients import RestClient
+from util.api.abstract_clients import RestClient, LOGIN_POST_HEADERS
 from lxml import html
 
 BATCH_SIZE_PROJECTS = 100
@@ -88,8 +88,13 @@ class BitbucketRestClient(RestClient):
 
     def get_pull_request(self, project_key, repo_key):
         api_url = f'{self.host}/rest/api/1.0/projects/{project_key}/repos/{repo_key}/pull-requests'
-        response = self.get(api_url, f'Could not retrieve pull requests list')
+        response = self.get(api_url, 'Could not retrieve pull requests list')
         return response.json()
+
+    def check_pull_request_has_conflicts(self, project_key, repo_key, pr_id):
+        api_url = f'{self.host}/rest/api/1.0/projects/{project_key}/repos/{repo_key}/pull-requests/{pr_id}/merge'
+        response = self.get(api_url, f'Could not get pull request merge status')
+        return response.json()['conflicted']
 
     def create_user(self, username, password=None, email=None):
         start_time = time.time()
@@ -132,11 +137,18 @@ class BitbucketRestClient(RestClient):
             'queryString': 'next=/admin/clustering',
             'submit': 'Log in'
         }
-        headers = self.LOGIN_POST_HEADERS
+        headers = LOGIN_POST_HEADERS
         headers['Origin'] = self.host
         r = session.post(url, data=body, headers=headers)
         cluster_html = r.content.decode("utf-8")
         return cluster_html
+
+    def get_bitbucket_nodes_count(self):
+        cluster_page = self.get_bitbucket_cluster_page()
+        nodes_count = cluster_page.count('class="cluster-node-id" headers="cluster-node-id"')
+        if nodes_count == 0:
+            nodes_count = "Server"
+        return nodes_count
 
     def get_bitbucket_system_page(self):
         session = self._session
@@ -144,7 +156,7 @@ class BitbucketRestClient(RestClient):
         body = {'j_username': self.user, 'j_password': self.password, '_atl_remember_me': 'on',
                 'next': f"{self.host}/plugins/servlet/troubleshooting/view/system-info/view",
                 'submit': 'Log in'}
-        headers = self.LOGIN_POST_HEADERS
+        headers = LOGIN_POST_HEADERS
         headers['Origin'] = self.host
         session.post(url, data=body, headers=headers)
         r = session.get(f"{self.host}/plugins/servlet/troubleshooting/view/system-info/view")
@@ -152,10 +164,15 @@ class BitbucketRestClient(RestClient):
 
     def get_locale(self):
         language = None
-        page = self.get(self.host, "Could not get page content.").content
+        page = self.get(f'{self.host}/dashboard', "Could not get page content.", headers=LOGIN_POST_HEADERS).content
         tree = html.fromstring(page)
         try:
             language = tree.xpath('//html/@lang')[0]
         except Exception as error:
             print(f"Warning: Could not get user locale: {error}")
         return language
+
+    def get_user_global_permissions(self, user=''):
+        api_url = f'{self.host}/rest/api/1.0/admin/permissions/users?filter={user}'
+        response = self.get(api_url, "Could not get user global permissions")
+        return response.json()
